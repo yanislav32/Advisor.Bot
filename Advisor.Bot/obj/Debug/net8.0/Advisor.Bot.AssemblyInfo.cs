@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Advisor.Bot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+88791992ecf9b8118f360938d25983360c0fd0fb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f681afd3b4c1ce65835c420a748c87e8b55ef185")]
 [assembly: System.Reflection.AssemblyProductAttribute("Advisor.Bot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Advisor.Bot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
