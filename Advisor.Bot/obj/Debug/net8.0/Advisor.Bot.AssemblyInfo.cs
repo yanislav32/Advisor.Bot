@@ -11,10 +11,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("7bed28b1-b067-4927-935e-a7bd7ec46b09")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("Advisor.Bot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4cae082b61b332e1898dd5b470a6053fae2e8829")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+58aea1e46cc87ee8e5c24e32bc1f4a264f66d663")]
 [assembly: System.Reflection.AssemblyProductAttribute("Advisor.Bot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Advisor.Bot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

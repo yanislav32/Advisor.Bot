@@ -1,25 +1,29 @@
 ﻿using Advisor.Bot.State;
 using Advisor.Bot.State.Models;
+using Advisor.Bot.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+
+
+
 
 namespace Advisor.Bot.Handlers;
 
 internal sealed class QuizHandler : IHandler
 {
     // ❶ Карта «шаг → (вопрос, кнопки)»
-    private readonly Dictionary<QuizStep, (string Q, string[] Opts)> _map = new()
+    private readonly Dictionary<QuizStep,(string Q,string[] Opts)> _map = new()
     {
-        [QuizStep.Role] = ("Кто вы по профессии?", new[] { "Сотрудник", "Фрилансер", "Предприниматель" }),
-        [QuizStep.Experience] = ("Сколько лет стажа?", new[] { "До 3", "3-10", "10+" }),
-        [QuizStep.Capital] = ("Какой объём капитала (₽)?", new[] { "0", "До 1 млн", "Больше" }),
-        [QuizStep.IncomeSources] = ("Сколько источников дохода?", new[] { "1", "2-3", "4+" }),
-        [QuizStep.SpareMoney] = ("Остаётся ли >10 % после трат?", new[] { "Да", "Нет" }),
-        [QuizStep.ExpenseTracking] = ("Ведёте учёт расходов?", new[] { "Всегда", "Иногда", "Нет" }),
-        [QuizStep.BudgetLeak] = ("Знаете «дыры» бюджета?", new[] { "Да", "Нет" }),
-        [QuizStep.Reserve] = ("Есть резерв 3-6 мес.?", new[] { "Да", "Нет" }),
-        [QuizStep.Goal] = ("Назовите финансовую цель", Array.Empty<string>()),
+        [QuizStep.Role]          = ("Кто вы по профессии?",          new[] { "Сотрудник", "Фрилансер", "Предприниматель" }),
+        [QuizStep.Experience]    = ("Сколько лет стажа?",            new[] { "До 3", "3-10", "10+" }),
+        [QuizStep.Capital]       = ("Какой объём капитала (₽)?",     new[] { "0", "До 1 млн", "Больше" }),
+        [QuizStep.IncomeSources] = ("Сколько источников дохода?",    new[] { "1", "2-3", "4+" }),
+        [QuizStep.SpareMoney]    = ("Остаётся ли >10 % после трат?", new[] { "Да", "Нет" }),
+        [QuizStep.ExpenseTracking]=("Ведёте учёт расходов?",         new[] { "Всегда", "Иногда", "Нет" }),
+        [QuizStep.BudgetLeak]    = ("Знаете «дыры» бюджета?",        new[] { "Да", "Нет" }),
+        [QuizStep.Reserve]       = ("Есть резерв 3-6 мес.?",         new[] { "Да", "Нет" }),
+        [QuizStep.Goal]          = ("Назовите финансовую цель",      Array.Empty<string>()),
     };
 
     public bool CanHandle(Update u, UserState s)
@@ -59,9 +63,12 @@ internal sealed class QuizHandler : IHandler
     private static QuizStep Next(QuizStep step) =>
         step == QuizStep.Goal ? QuizStep.Finished : (QuizStep)((int)step + 1);
 
-    private static ReplyKeyboardMarkup BuildReply(string[] opts) =>
-        opts.Length == 0
-            ? new ReplyKeyboardRemove()
-            : new(opts.Select(o => new[] { new KeyboardButton(o) }))
-            { ResizeKeyboard = true, OneTimeKeyboard = true };
+    private static Telegram.Bot.Types.ReplyMarkups.IReplyMarkup BuildReply(string[] opts) =>
+    opts.Length == 0
+        ? new ReplyKeyboardRemove()
+        : new ReplyKeyboardMarkup(
+              opts.Select(o => new[] { new KeyboardButton(o) }))
+        { ResizeKeyboard = true, OneTimeKeyboard = true };
+
+
 }
