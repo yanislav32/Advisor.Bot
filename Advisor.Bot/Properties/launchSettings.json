@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Advisor.Bot": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "TG_TOKEN": "8081496102:AAHxLoJyQeVgDg1ot-M1On-uDTJeuTyUZ14"
+      }
+    }
+  }
+}

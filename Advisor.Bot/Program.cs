@@ -7,24 +7,26 @@ using Telegram.Bot;
 using Telegram.Bot.Polling;
 
 var host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices((_, services) =>
+    .ConfigureServices((context, services) =>
     {
-        var token = Environment.GetEnvironmentVariable("TG_TOKEN")
-                     ?? throw new InvalidOperationException("TG_TOKEN missing");
+        // context.Configuration уже включает:
+        // • appsettings*.json
+        // • user-secrets (если среда Development)
+        // • переменные окружения
+        var cfg = context.Configuration;
+        var token = cfg["TG_TOKEN"]                         // User Secrets / appsettings
+                 ?? Environment.GetEnvironmentVariable("TG_TOKEN") // env-var
+                 ?? throw new InvalidOperationException("TG_TOKEN missing");
 
         services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(token));
 
-        // DI наших классов
         services.AddSingleton<StateService>();
         services.AddSingleton<ChecklistService>();
 
-        // регистрируем обработчики
         services.AddSingleton<IHandler, StartCommandHandler>();
         services.AddSingleton<IHandler, QuizHandler>();
 
-        // UpdateHandler зависит от StateService и списка IHandler
         services.AddSingleton<IUpdateHandler, UpdateHandler>();
-
         services.AddHostedService<BotBackgroundService>();
     })
     .Build();

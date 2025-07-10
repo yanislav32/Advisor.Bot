@@ -10,6 +10,7 @@ namespace Advisor.Bot.Services;
 
 public sealed class UpdateHandler : IUpdateHandler
 {
+
     private readonly ITelegramBotClient _bot;
     private readonly StateService _states;
     private readonly List<IHandler> _handlers;
@@ -38,6 +39,8 @@ public sealed class UpdateHandler : IUpdateHandler
         Update update,
         CancellationToken ct)
     {
+        Console.WriteLine($"[{update.Type}] {update.Message?.Text}");
+
         if (update.Type != UpdateType.Message) return;
 
         var state = _states.Get(update.Message!.Chat.Id);
