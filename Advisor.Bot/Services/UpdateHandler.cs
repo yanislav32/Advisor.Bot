@@ -1,6 +1,6 @@
 ﻿namespace Advisor.Bot;
 
-public class PdfGenerator
+public class UpdateHandler
 {
 
 }
