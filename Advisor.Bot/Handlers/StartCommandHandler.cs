@@ -21,7 +21,7 @@ internal sealed class StartCommandHandler : IHandler
         state = states.Get(chat);
         state.Step = QuizStep.Role;         // первый вопрос
 
-        await bot.SendTextMessageAsync(chat,
+        await bot.SendMessage(chat,
             "🔸 Пройдём короткий финансовый чек-ап. Отвечай честно 😉",
             replyMarkup: BuildReplyKeyboard("Поехали"),
             cancellationToken: ct);

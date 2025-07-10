@@ -49,21 +49,21 @@ internal sealed class QuizHandler : IHandler
         {
             // конец теста: отдаём чек-лист
             var checklist = new ChecklistService().Build(state.Answers); // позже DI
-            await bot.SendTextMessageAsync(chat, checklist, cancellationToken: ct);
+            await bot.SendMessage(chat, checklist, cancellationToken: ct);
             states.Reset(chat);
             return;
         }
 
         // ❹ Шлём следующий вопрос
         var (q, opts) = _map[state.Step];
-        await bot.SendTextMessageAsync(chat, q,
+        await bot.SendMessage(chat, q,
             replyMarkup: BuildReply(opts), cancellationToken: ct);
     }
 
     private static QuizStep Next(QuizStep step) =>
         step == QuizStep.Goal ? QuizStep.Finished : (QuizStep)((int)step + 1);
 
-    private static Telegram.Bot.Types.ReplyMarkups.IReplyMarkup BuildReply(string[] opts) =>
+    private static Telegram.Bot.Types.ReplyMarkups.ReplyMarkup BuildReply(string[] opts) =>
     opts.Length == 0
         ? new ReplyKeyboardRemove()
         : new ReplyKeyboardMarkup(

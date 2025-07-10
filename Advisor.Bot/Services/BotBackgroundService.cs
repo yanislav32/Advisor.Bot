@@ -16,11 +16,18 @@ public sealed class BotBackgroundService : BackgroundService
         _handler = handler;
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    // BotBackgroundService.cs
+    protected override Task ExecuteAsync(CancellationToken stop)
     {
-        _bot.StartReceiving(_handler, _handler,
-            new ReceiverOptions { AllowedUpdates = Array.Empty<UpdateType>() },
-            cancellationToken: stoppingToken);
+        _bot.StartReceiving(_handler,          // ← один аргумент
+            new ReceiverOptions
+            {
+                AllowedUpdates = Array.Empty<UpdateType>()
+            },
+            cancellationToken: stop);
+
         return Task.CompletedTask;
     }
+
 }
+
