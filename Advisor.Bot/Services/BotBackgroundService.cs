@@ -20,9 +20,9 @@ public sealed class BotBackgroundService : BackgroundService
     protected override Task ExecuteAsync(CancellationToken stop)
     {
         _bot.StartReceiving(_handler,          // ← один аргумент
-            new ReceiverOptions
+            receiverOptions: new ReceiverOptions()
             {
-                AllowedUpdates = Array.Empty<UpdateType>()
+               
             },
             cancellationToken: stop);
 

@@ -1,6 +1,7 @@
 ﻿using Advisor.Bot.Handlers;
 using Advisor.Bot.Services;
 using Advisor.Bot.State;
+using Advisor.Bot.State.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
@@ -23,7 +24,12 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<StateService>();
         services.AddSingleton<ChecklistService>();
 
+        // создаём единственный словарь map и шарим его
+        var map = new Dictionary<QuizStep, (string, string[])>(QuizHandler.DefaultMap);
+        services.AddSingleton(map);
+
         services.AddSingleton<IHandler, StartCommandHandler>();
+        services.AddSingleton<IHandler, CallbackHandler>();
         services.AddSingleton<IHandler, QuizHandler>();
 
         services.AddSingleton<IUpdateHandler, UpdateHandler>();

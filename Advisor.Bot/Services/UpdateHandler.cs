@@ -35,17 +35,47 @@ public sealed class UpdateHandler : IUpdateHandler
 
 
     public async Task HandleUpdateAsync(
-        ITelegramBotClient botClient,
-        Update update,
-        CancellationToken ct)
+    ITelegramBotClient bot,
+    Update update,
+    CancellationToken ct)
     {
-        Console.WriteLine($"[{update.Type}] {update.Message?.Text}");
+        Console.WriteLine($"▶ update: {update.Type}");//удалить позже
 
-        if (update.Type != UpdateType.Message) return;
+        // теперь НЕ фильтруем тип; отдаём всем зарегистрированным IHandler
+        long chatId = update switch
+        {
+            { Message: { } m } => m.Chat.Id,
+            { CallbackQuery: { } cb } => cb.Message!.Chat.Id,
+            _ => 0
+        };
 
-        var state = _states.Get(update.Message!.Chat.Id);
-        var handler = _handlers.FirstOrDefault(h => h.CanHandle(update, state));
-        if (handler is not null)
-            await handler.HandleAsync(botClient, update, state, _states, ct);
+        var state = chatId == 0 ? null : _states.Get(chatId);
+
+        // ── глобальный guard: во время квиза игнорим любой ручной текст ──
+        if (update.Message is { Type: MessageType.Text } msg
+            && state.Step is >= QuizStep.Role and < QuizStep.Finished)
+        {
+            // проверим, есть ли такое текстовое значение в карте кнопок
+            var opts = QuizHandler.DefaultMap[state.Step].Opts;
+            if (!opts.Any(o => o.Trim().Equals(msg.Text.Trim(), StringComparison.OrdinalIgnoreCase)))
+                return; // не совпало ни с одной кнопкой → игнорируем
+        }
+
+        Console.WriteLine($"\n=== New update: Type={update.Type}, Chat={chatId}, Step={(state?.Step.ToString() ?? "null")} ===");
+        if (update.Message != null)
+            Console.WriteLine($"Message.Text: \"{update.Message.Text}\"");
+
+        foreach (var h in _handlers)
+        {
+            bool can = h.CanHandle(update, state!);
+            Console.WriteLine($"  Handler {h.GetType().Name}.CanHandle → {can}");
+            if (can)
+            {
+                Console.WriteLine($"    → Invoking {h.GetType().Name}.HandleAsync");
+                await h.HandleAsync(bot, update, state!, _states, ct);
+                break;
+            }
+        }
     }
+
 }
