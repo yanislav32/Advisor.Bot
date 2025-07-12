@@ -5,6 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Advisor.Bot.Data;
 
 namespace Advisor.Bot.Handlers;
 
@@ -45,12 +46,14 @@ internal sealed class QuizHandler : IHandler
     };
 
     private readonly Dictionary<QuizStep, (string Q, string[] Opts)> _map;
-    private readonly ChecklistService _checklist;
+    private readonly ChecklistService _checklist; 
+    private readonly BotDbContext _db;
 
-    public QuizHandler(Dictionary<QuizStep, (string, string[])> map, ChecklistService checklist)
+    public QuizHandler(Dictionary<QuizStep, (string, string[])> map, ChecklistService checklist, BotDbContext db)
     {
         _map = map;
-        _checklist = checklist;
+        _checklist = checklist; 
+        _db = db;
     }
 
     public bool CanHandle(Update u, UserState s) =>
@@ -64,18 +67,28 @@ internal sealed class QuizHandler : IHandler
         StateService states,
         CancellationToken ct)
     {
-        Console.WriteLine($"▶ step={state.Step} text=\"{u.Message?.Text}\"");
-
+        
         long chat = u.Message!.Chat.Id;
+        var prevStep = state.Step;
         string answer = u.Message.Text!.Trim();
 
         // сравните ответ с вариантами, как вы уже делали …
         if (!_map[state.Step].Opts.Any(o => o.Trim().Equals(answer, StringComparison.OrdinalIgnoreCase)))
             return;  // не кнопка — игнор
 
+        var rec = new AnswerRecord
+        {
+            ChatId = chat,
+            Step = prevStep,
+            Response = answer,
+            AnsweredAt = DateTime.UtcNow
+        };
+        _db.Answers.Add(rec);
+        await _db.SaveChangesAsync(ct);
+
         // сохраняем ответ и увеличиваем шаг
-        state.Answers[state.Step] = answer;
-        state.Step = Next(state.Step);
+        state.Answers[prevStep] = answer;
+        state.Step = Next(prevStep);
 
         // ── вот здесь сохраняем изменившийся state ─────────────────────────
         states.Save(chat, state);   // или Reset+Get, см. выше

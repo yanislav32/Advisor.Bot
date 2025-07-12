@@ -6,6 +6,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 using System.IO;
 using Advisor.Bot.Services;
 using Telegram.Bot.Types.Enums;
+using Advisor.Bot.Data;
 
 namespace Advisor.Bot.Handlers;
 
@@ -13,12 +14,14 @@ internal sealed class StartCommandHandler : IHandler
 {
     private readonly Dictionary<QuizStep, (string Q, string[] Opts)> _map;
     private readonly ChecklistService _chk;   // понадобится, если решите сдвигать дальше
+    private readonly BotDbContext _db;
 
     public StartCommandHandler(Dictionary<QuizStep, (string, string[])> map,
-                               ChecklistService chk)
+                               ChecklistService chk, BotDbContext db)
     {
         _map = map;
-        _chk = chk;
+        _chk = chk; 
+        _db = db;
     }
 
     public bool CanHandle(Update u, UserState _) => u.Message?.Text == "/start";
@@ -32,9 +35,28 @@ internal sealed class StartCommandHandler : IHandler
     {
         long chat = u.Message!.Chat.Id;
 
-        // 0) чистим предыдущее состояние
+        // -1) чистим предыдущее состояние
         states.Reset(chat);
         state = states.Get(chat);
+
+        // 0) Сохраняем или обновляем UserRecord:
+        var user = await _db.Users.FindAsync(chat);
+        if (user == null)
+        {
+            user = new UserRecord
+            {
+                ChatId = chat,
+                UserName = u.Message.From?.Username,
+                FirstSeen = DateTime.UtcNow
+            };
+            _db.Users.Add(user);
+        }
+        else if (user.FirstSeen == default)
+        {
+            user.FirstSeen = DateTime.UtcNow;
+            _db.Users.Update(user);
+        }
+        await _db.SaveChangesAsync(ct);
 
         // 1) приветственный текст
         const string welcome = """

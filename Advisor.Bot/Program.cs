@@ -6,8 +6,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
+using Microsoft.EntityFrameworkCore;
+using Advisor.Bot.Data;
+using Microsoft.Extensions.Configuration;
 
 var host = Host.CreateDefaultBuilder(args)
+    .ConfigureAppConfiguration((ctx, cfg) =>
+    {
+    // независимо от среды
+    cfg.AddUserSecrets<Program>(optional: true);
+    })
     .ConfigureServices((context, services) =>
     {
         // context.Configuration уже включает:
@@ -15,6 +23,9 @@ var host = Host.CreateDefaultBuilder(args)
         // • user-secrets (если среда Development)
         // • переменные окружения
         var cfg = context.Configuration;
+        var conn = cfg.GetConnectionString("BotDb");
+        //Console.WriteLine($"[DEBUG] TG_TOKEN = {cfg["TG_TOKEN"]}");
+
         var token = cfg["TG_TOKEN"]                         // User Secrets / appsettings
                  ?? Environment.GetEnvironmentVariable("TG_TOKEN") // env-var
                  ?? throw new InvalidOperationException("TG_TOKEN missing");
@@ -23,6 +34,11 @@ var host = Host.CreateDefaultBuilder(args)
 
         services.AddSingleton<StateService>();
         services.AddSingleton<ChecklistService>();
+
+        
+
+        services.AddDbContext<BotDbContext>(opt =>
+            opt.UseNpgsql(conn));
 
         // создаём единственный словарь map и шарим его
         var map = new Dictionary<QuizStep, (string, string[])>(QuizHandler.DefaultMap);
