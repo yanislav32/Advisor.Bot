@@ -53,4 +53,10 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
+    using (var scope = host.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<BotDbContext>();
+        db.Database.Migrate();
+    }
+
 await host.RunAsync();
