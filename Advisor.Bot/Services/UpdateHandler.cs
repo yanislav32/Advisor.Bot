@@ -14,12 +14,13 @@ public sealed class UpdateHandler : IUpdateHandler
     private readonly ITelegramBotClient _bot;
     private readonly StateService _states;
     private readonly List<IHandler> _handlers;
-
-    public UpdateHandler(ITelegramBotClient bot, StateService states, IEnumerable<IHandler> handlers)
+    private readonly Dictionary<QuizStep, (string Q, string[] Opts)> _map;
+    public UpdateHandler(ITelegramBotClient bot, StateService states, IEnumerable<IHandler> handlers, Dictionary<QuizStep, (string Q, string[] Opts)> map)
     {
         _bot = bot;
         _states = states;
         _handlers = handlers.ToList();
+        _map = map;
     }
 
     // ✅ новая сигнатура (Bot API v22) - без повторяющихся «_»
@@ -56,7 +57,7 @@ public sealed class UpdateHandler : IUpdateHandler
             && state.Step is >= QuizStep.Role and < QuizStep.Finished)
         {
             // проверим, есть ли такое текстовое значение в карте кнопок
-            var opts = QuizHandler.DefaultMap[state.Step].Opts;
+            var opts = _map[state.Step].Opts;
             if (!opts.Any(o => o.Trim().Equals(msg.Text.Trim(), StringComparison.OrdinalIgnoreCase)))
                 return; // не совпало ни с одной кнопкой → игнорируем
         }

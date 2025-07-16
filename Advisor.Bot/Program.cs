@@ -9,6 +9,8 @@ using Telegram.Bot.Polling;
 using Microsoft.EntityFrameworkCore;
 using Advisor.Bot.Data;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+using Advisor.Bot.Data.Models; // где QuizItem
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((ctx, cfg) =>
@@ -18,6 +20,21 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((context, services) =>
     {
+
+        // 1) Прочитать файл и десериализовать
+        var json = File.ReadAllText(Path.Combine(context.HostingEnvironment.ContentRootPath, "Content/quiz.json"));
+        var map = JsonSerializer.Deserialize<Dictionary<QuizStep, QuizItem>>(json,
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                  ?? throw new InvalidOperationException("Не удалось загрузить quiz.json");
+
+        // 2) Преобразовать в нужный тип: Dictionary<QuizStep,(string,string[])>
+        var typedMap = map.ToDictionary(
+            kvp => kvp.Key,
+            kvp => (kvp.Value.Q, kvp.Value.Opts)
+        );
+        services.AddSingleton(typedMap);
+
+
         // context.Configuration уже включает:
         // • appsettings*.json
         // • user-secrets (если среда Development)
@@ -41,8 +58,8 @@ var host = Host.CreateDefaultBuilder(args)
             opt.UseNpgsql(conn));
 
         // создаём единственный словарь map и шарим его
-        var map = new Dictionary<QuizStep, (string, string[])>(QuizHandler.DefaultMap);
-        services.AddSingleton(map);
+        //var map = new Dictionary<QuizStep, (string, string[])>(QuizHandler.DefaultMap);
+        //services.AddSingleton(map);
 
         services.AddSingleton<IHandler, StartCommandHandler>();
         services.AddSingleton<IHandler, CallbackHandler>();
