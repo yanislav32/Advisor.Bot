@@ -14,7 +14,7 @@ namespace Advisor.Bot.Data
 
             // жёстко вписываем тут строку подключения OR читаем из ENV:
             // var conn = Environment.GetEnvironmentVariable("BOTDB__ConnectionStrings__BotDb")
-            var conn = "Host=localhost;Port=5432;Database=botdb;Username=botuser;Password=Alan98325";
+            var conn = "Host=localhost;Port=5432;Database=dbEnglishMood;Username=botuserEnglishMood;Password=Alan98325";
 
             builder.UseNpgsql(conn);
 
