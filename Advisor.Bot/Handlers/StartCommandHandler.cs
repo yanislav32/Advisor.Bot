@@ -50,6 +50,18 @@ internal sealed class StartCommandHandler : IHandler
                 FirstSeen = DateTime.UtcNow
             };
             _db.Users.Add(user);
+
+            string userTgLink = "https://t.me/{user.UserName}";
+            var msgNewUser =
+                            $"<b>Новый пользователь!</b>\n" +
+                            $"Username: <a href=\"https://t.me/{user.UserName}\">@{user.UserName}</a>\n" +
+                            $"Id: <code>{user.ChatId}</code>\n" +
+                            $"Дата подключения: {user.FirstSeen:dd-MM-yyyy}\n" +
+                            $"Время подключения: {user.FirstSeen:HH:mm:ss}";
+            long adminChatId = 528017102;
+            await bot.SendMessage(adminChatId, msgNewUser, parseMode: ParseMode.Html);
+            await bot.SendMessage(406865885, msgNewUser, parseMode: ParseMode.Html);
+
         }
         else if (user.FirstSeen == default)
         {
